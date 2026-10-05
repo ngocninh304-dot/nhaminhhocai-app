@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="vi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nhà Mình Học AI</title>
+<!-- Trang "cửa vào": giữ biểu tượng app khi thêm ra màn hình chính, rồi mở app Apps Script -->
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icon-32.png">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="apple-mobile-web-app-title" content="Nhà Mình Học AI">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#c8102e">
+<script>
+  /* ĐỔI DÒNG NÀY nếu link app (/exec) thay đổi */
+  var APP_URL = 'https://script.google.com/macros/s/AKfycbz0rfQWjFmN53LKYivkCvRq8WOlIYHFSpqggfysLo7Us2iwZVTx9_A0zgasIBYR060tXA/exec';
+
+  // Mở từ biểu tượng ngoài màn hình chính (link có ?mo=1, hoặc chế độ app) → vào app luôn
+  var fromHome = /[?&]mo=1/.test(location.search) || navigator.standalone === true ||
+    (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
+  if (fromHome) location.replace(APP_URL);
+  // Mở lần đầu từ link được gửi: ghi ?mo=1 vào địa chỉ để biểu tượng thêm ra màn hình chính tự vào app
+  else try { history.replaceState(null, '', location.pathname + '?mo=1'); } catch (e) {}
+</script>
+<style>
+  :root{--red:#c8102e;--ink:#2b1d14;--muted:#7a6656;--bg:#fff8ef;--card:#fff;--line:#f0dfcc;--gold:#e8a317}
+  *{box-sizing:border-box}
+  body{margin:0;background:var(--bg);color:var(--ink);font:18px/1.55 "Segoe UI",Roboto,Arial,sans-serif}
+  .wrap{max-width:520px;margin:0 auto;padding:28px 16px 40px;text-align:center}
+  img.logo{width:112px;height:112px;border-radius:26px;box-shadow:0 6px 18px rgba(120,20,20,.25)}
+  h1{font-size:1.5rem;margin:14px 0 4px}
+  p{margin:.4em 0}
+  .muted{color:var(--muted)}
+  .btn{display:block;width:100%;padding:16px;border-radius:14px;background:var(--red);color:#fff;font-weight:700;font-size:1.1rem;text-decoration:none;margin:18px 0 8px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:16px;text-align:left;margin-top:16px}
+  .card h2{font-size:1.05rem;margin:0 0 8px}
+  ol{margin:0;padding-left:1.3em}
+  li{margin:6px 0}
+  .ic{display:inline-block;border:1.5px solid var(--line);border-radius:8px;padding:0 6px;background:#fffdf9;font-weight:700}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <img class="logo" src="icon-192.png" alt="Biểu tượng Nhà Mình Học AI">
+  <h1>Nhà Mình Học AI</h1>
+  <p class="muted">Cả nhà cùng học, Tết cùng nhận lì xì 🧧</p>
+  <a class="btn" id="go" href="#">Vào học ngay</a>
+
+  <div class="card" id="ios">
+    <h2>📱 Đưa app ra màn hình iPhone</h2>
+    <ol>
+      <li>Mở trang này bằng <b>Safari</b>.</li>
+      <li>Bấm nút <span class="ic">Chia sẻ ⬆</span> (ô vuông có mũi tên lên).</li>
+      <li>Chọn <b>Thêm vào MH chính</b> → <b>Thêm</b>.</li>
+    </ol>
+  </div>
+  <div class="card" id="android">
+    <h2>📱 Đưa app ra màn hình Android</h2>
+    <ol>
+      <li>Mở trang này bằng <b>Chrome</b>.</li>
+      <li>Bấm <span class="ic">⋮</span> góc trên bên phải.</li>
+      <li>Chọn <b>Thêm vào màn hình chính</b> (hoặc <b>Cài đặt ứng dụng</b>) → <b>Thêm</b>.</li>
+    </ol>
+  </div>
+  <p class="muted" style="font-size:.9rem;margin-top:16px">Từ lần sau, bấm biểu tượng 🏠🤖 ngoài màn hình là vào thẳng app.</p>
+</div>
+<script>
+  document.getElementById('go').href = APP_URL;
+  var ua = navigator.userAgent || '';
+  if (/android/i.test(ua)) document.getElementById('ios').classList.add('hide');
+  else if (/iphone|ipad|ipod|macintosh/i.test(ua)) document.getElementById('android').classList.add('hide');
+</script>
+</body>
+</html>
