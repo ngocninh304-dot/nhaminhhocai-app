@@ -17,12 +17,15 @@
   /* ĐỔI DÒNG NÀY nếu link app (/exec) thay đổi */
   var APP_URL = 'https://script.google.com/macros/s/AKfycbz0rfQWjFmN53LKYivkCvRq8WOlIYHFSpqggfysLo7Us2iwZVTx9_A0zgasIBYR060tXA/exec';
 
-  // Mở từ biểu tượng ngoài màn hình chính (link có ?mo=1, hoặc chế độ app) → vào app luôn
+  /* Trang cửa vào giữ mã đăng nhập trên máy (bộ nhớ riêng của biểu tượng ngoài màn hình chính),
+     mở app ngay trong trang này và gửi kèm mã đó, nên cả nhà không phải đăng nhập lại mỗi lần. */
+  var KEY = 'nmha_dang_nhap';
+  var APP_ORIGIN = /^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$/;
+  function getTok() { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
+  function setTok(t) { try { if (t) localStorage.setItem(KEY, t); else localStorage.removeItem(KEY); } catch (e) {} }
   var fromHome = /[?&]mo=1/.test(location.search) || navigator.standalone === true ||
     (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
-  if (fromHome) location.replace(APP_URL);
-  // Mở lần đầu từ link được gửi: ghi ?mo=1 vào địa chỉ để biểu tượng thêm ra màn hình chính tự vào app
-  else try { history.replaceState(null, '', location.pathname + '?mo=1'); } catch (e) {}
+  if (!fromHome) { try { history.replaceState(null, '', location.pathname + '?mo=1'); } catch (e) {} }
 </script>
 <style>
   :root{--red:#c8102e;--ink:#2b1d14;--muted:#7a6656;--bg:#fff8ef;--card:#fff;--line:#f0dfcc;--gold:#e8a317}
@@ -39,11 +42,16 @@
   ol{margin:0;padding-left:1.3em}
   li{margin:6px 0}
   .ic{display:inline-block;border:1.5px solid var(--line);border-radius:8px;padding:0 6px;background:#fffdf9;font-weight:700}
-  .hide{display:none}
+  .hide{display:none!important}
+  #appFrame{position:fixed;inset:0;width:100%;height:100%;border:0;background:var(--bg);z-index:5}
+  #wait{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:var(--bg);z-index:6;padding:16px;text-align:center}
+  #wait img{width:88px;height:88px;border-radius:22px}
+  .spin{width:34px;height:34px;border:4px solid var(--line);border-top-color:var(--red);border-radius:50%;animation:sp 1s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-<div class="wrap">
+<div class="wrap" id="home">
   <img class="logo" src="icon-192.png" alt="Biểu tượng Nhà Mình Học AI">
   <h1>Nhà Mình Học AI</h1>
   <p class="muted">Cả nhà cùng học, Tết cùng nhận lì xì 🌼</p>
@@ -67,11 +75,39 @@
   </div>
   <p class="muted" style="font-size:.9rem;margin-top:16px">Từ lần sau, bấm biểu tượng 🏠🤖 ngoài màn hình là vào thẳng app.</p>
 </div>
+<div id="wait" class="hide"><img src="icon-192.png" alt=""><div class="spin"></div><div id="waitTxt">Đang mở app…</div>
+  <a id="direct" class="btn hide" href="#" style="max-width:320px">Mở app trực tiếp</a></div>
 <script>
-  document.getElementById('go').href = APP_URL;
+  var frame = null, readyTimer = null;
+  function openApp() {
+    var tok = getTok();
+    document.getElementById('home').classList.add('hide');
+    document.getElementById('wait').classList.remove('hide');
+    frame = document.createElement('iframe');
+    frame.id = 'appFrame';
+    frame.title = 'Nhà Mình Học AI';
+    frame.allow = 'microphone; clipboard-write';
+    frame.src = APP_URL + '?lp=1' + (tok ? '&t=' + encodeURIComponent(tok) : '');
+    document.body.appendChild(frame);
+    // không mở được trong khung (mạng chậm, máy chặn): cho mở thẳng link app
+    readyTimer = setTimeout(function () {
+      document.getElementById('waitTxt').textContent = 'Mạng hơi chậm hoặc máy chưa mở được app trong khung này.';
+      document.getElementById('direct').classList.remove('hide');
+    }, 20000);
+  }
+  window.addEventListener('message', function (ev) {
+    if (!APP_ORIGIN.test(ev.origin) || !ev.data || !ev.data.nmha) return;
+    var d = ev.data;
+    if (d.type === 'ready') { clearTimeout(readyTimer); document.getElementById('wait').classList.add('hide'); }
+    if (d.type === 'token' && /^[a-f0-9]{64}$/.test(d.token || '')) setTok(d.token);
+    if (d.type === 'logout') setTok('');
+  });
+  document.getElementById('direct').href = APP_URL;
+  document.getElementById('go').addEventListener('click', function (e) { e.preventDefault(); openApp(); });
   var ua = navigator.userAgent || '';
   if (/android/i.test(ua)) document.getElementById('ios').classList.add('hide');
   else if (/iphone|ipad|ipod|macintosh/i.test(ua)) document.getElementById('android').classList.add('hide');
+  if (fromHome) openApp();
 </script>
 </body>
 </html>
