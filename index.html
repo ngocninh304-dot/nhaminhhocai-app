@@ -87,13 +87,15 @@
     frame.id = 'appFrame';
     frame.title = 'Nhà Mình Học AI';
     frame.allow = 'microphone; clipboard-write';
-    frame.src = APP_URL + '?lp=1' + (tok ? '&t=' + encodeURIComponent(tok) : '');
+    frame.src = APP_URL + '?lp=1&lo=' + encodeURIComponent(location.origin) + (tok ? '&t=' + encodeURIComponent(tok) : '');
+    // khung app tải xong là hiện ra luôn (không chờ tin "sẵn sàng" từ app)
+    frame.addEventListener('load', function () { clearTimeout(readyTimer); setTimeout(function () { document.getElementById('wait').classList.add('hide'); }, 300); });
     document.body.appendChild(frame);
     // không mở được trong khung (mạng chậm, máy chặn): cho mở thẳng link app
     readyTimer = setTimeout(function () {
       document.getElementById('waitTxt').textContent = 'Mạng hơi chậm hoặc máy chưa mở được app trong khung này.';
       document.getElementById('direct').classList.remove('hide');
-    }, 20000);
+    }, 30000);
   }
   window.addEventListener('message', function (ev) {
     if (!APP_ORIGIN.test(ev.origin) || !ev.data || !ev.data.nmha) return;
