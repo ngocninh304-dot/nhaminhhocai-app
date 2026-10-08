@@ -23,7 +23,10 @@
   var APP_ORIGIN = /^https:\/\/([a-z0-9-]+\.)*(googleusercontent\.com|script\.google\.com)$/;
   function getTok() { try { return localStorage.getItem(KEY) || ''; } catch (e) { return ''; } }
   function setTok(t) { try { if (t) localStorage.setItem(KEY, t); else localStorage.removeItem(KEY); } catch (e) {} }
-  var fromHome = /[?&]mo=1/.test(location.search) || navigator.standalone === true ||
+  // Link vào thẳng (?t=mã): lưu mã đăng nhập vào máy. Giữ nguyên link để khi "Thêm vào màn hình chính"
+  // (iPhone tách bộ nhớ riêng cho biểu tượng) biểu tượng vẫn mang theo mã, bấm vào là vào thẳng.
+  (function () { var m = location.search.match(/[?&]t=([a-f0-9]{64})/); if (m && !getTok()) setTok(m[1]); })();
+  var fromHome = /[?&](mo=1|t=)/.test(location.search) || navigator.standalone === true ||
     (window.matchMedia && matchMedia('(display-mode: standalone)').matches);
   if (!fromHome) { try { history.replaceState(null, '', location.pathname + '?mo=1'); } catch (e) {} }
 </script>
